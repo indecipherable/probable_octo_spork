@@ -1,0 +1,256 @@
+TROUBLESHOOTING
+Troubleshooting is the recognition, diagnosis, and resolution of problems. Troubleshooting begins with the identification of a problem, and it does not end until services have been restored and the problem no longer adversely affects users. Troubleshooting can take many forms, but all approaches have the same goal: to solve a problem efficiently with a minimal interruption of service.
+
+TROUBLESHOOTING MODELS
+A troubleshooting strategy is a plan of action for identifying the causes and resolving the effects of a system-related issue. You can implement a troubleshooting strategy through a step-by-step approach, or a troubleshooting model. There are many such models, and they can vary in their approach, but all models attempt to enable the troubleshooter to move in a methodical and repeatable pattern during the troubleshooting process.
+
+One example of a troubleshooting model divides the process into the following steps:
+
+1.
+
+Identify the problem. This stage includes:
+
+•
+
+Gathering information.
+
+•
+
+Duplicating the problem, if possible.
+
+•
+
+Questioning users to gain experiential information.
+
+•
+
+Identifying the symptoms.
+
+•
+
+Determining if anything has changed.
+
+•
+
+Approaching multiple problems individually.
+
+2.
+
+Establish a theory of probable cause. This stage includes:
+
+•
+
+Questioning the obvious.
+
+•
+
+Considering multiple approaches.
+
+•
+
+Looking for not just a cause, but the root cause.
+
+3.
+
+Test the theory to determine the cause.
+
+•
+
+When the theory is confirmed, determine the next steps to resolve the problem.
+
+•
+
+If the theory is not confirmed, establish a new theory or escalate the issue.
+
+4.
+
+Establish a plan of action to resolve the problem, while identifying the potential effects of your plan.
+
+5.
+
+Implement the solution, or escalate the issue.
+
+6.
+
+Verify full system functionality and, if applicable, implement preventative measures.
+
+7.
+
+Document your findings, actions, and the outcomes.
+
+PERMISSIONS TROUBLESHOOTING
+As a general guideline, whenever you are denied permissions when you expect to have them, or vice versa, you should always verify the permissions of the relevant object by using the ls -al command. That will often save you from a lot of guesswork, as many issues simply come down to the wrong permission being applied.
+
+The following table lists some common symptoms that relate to permissions issues, as well as some potential causes and solutions. Note that these are examples, and that some of these symptoms can have multiple causes and solutions.
+
+Symptom
+
+Cause and Solution
+
+The owner of a text file is denied permission to view the contents of the text file.
+
+Cause: Despite being the owner, the user is not explicitly granted read access.
+
+Solution: Use chmod to grant read privileges to the owner context.
+
+A user is denied permission to remove a directory, despite having write permission.
+
+Cause: The user needs both write and execute permission to modify a directory.
+
+Solution: Use chmod to add execute permission to the directory for the appropriate context.
+
+A user is denied permission to enter into a directory, despite having read permission.
+
+Cause: The user needs execute permission to change to a directory.
+
+Solution: Use chmod to add execute permission to the directory for the appropriate context.
+
+A user is denied permission to remove a file, despite having full permissions on that file.
+
+Cause: The user must have write permission on the containing directory.
+
+Solution: Use chmod to add write permission to the directory for the proper context.
+
+A user is denied permission to create files in a directory they have write and execute permission to.
+
+Cause: The immutable flag is set on the directory.
+
+Solution: As root, remove the immutable flag from the directory using the chattr command.
+
+The root user is denied permission to modify a file.
+
+Cause: The immutable flag is set on the file.
+
+Solution: As root, remove the immutable flag from the file using the chattr command.
+
+All users have the ability to list the contents of a directory, when only the owner, group members, and a specific service account should.
+
+Cause: The read permission is set on the directory for the others context.
+
+Solution: Remove read permission from the others context. Add the service account to the directory's ACL using the setfacl command, granting the account read access.
+
+A user is denied permission to execute a script that they themselves created.
+
+Cause: The execute permission is not automatically set for new files.
+
+Solution: Use chmod to add execute permission to the script for the file owner.
+
+A user is denied permission to change the contents of a script, even though they have the ability to execute that script.
+
+Cause: Like with any other file, the user needs write permission in order to change a script's contents.
+
+Solution: Use chmod to add write permission to the script for the appropriate context.
+
+A user is denied permission to execute a script, despite having execute permission.
+
+Cause: The user also needs read permission in order to execute a script.
+
+Solution: Use chmod to add read permission to the script for the appropriate context.
+
+All users are able to delete a file, but they should only be able to write to it.
+
+Cause: By default, the write and execute permissions on directories enable users to delete the objects therein.
+
+Solution: Add the sticky bit permission to the container directory so that only the owner or root can delete the file.
+
+OWNERSHIP TROUBLESHOOTING
+Just like with permissions, you should use ls -al to verify the user and group ownership of a file or directory whenever you are experiencing ownership-related issues. Beyond that, the following table lists some potential issues you may come across, as well as suggested causes and solutions.
+
+Symptom
+
+Cause and Solution
+
+A user is unable to access a file, despite the owner context having full permissions.
+
+Cause: The user is not the owner of the file.
+
+Solution: Use the chown command to make the user the owner of the file.
+
+A user is unable to delete a file, despite the containing directory granting full permissions to the group.
+
+Cause: The directory's owning group is not the same as the user's group.
+
+Solution: Use the chgrp command to make the directory's owning group the same as the user's.
+
+Several users are able to modify a file despite the others context only having read permission.
+
+Cause: The file's owning group is set to the same group that these users are members of.
+
+Solution: Use chgrp to change the file's owning group to some other group.
+
+When a user creates files in a shared directory, the files take on the user's group ID, when they should take on the directory's group ID.
+
+Cause: By default, files created by a user take on that user's group ID.
+
+Solution: Use chmod to set the SGID permission on the containing directory so that all new files inherit the directory's group ID.
+
+When a user creates files in a shared directory, the files take on the
+
+Cause: The SGID permission is set on the shared directory so that new files inherit the directory's group ID.
+
+directory's group ID, when they should take on the user's group ID.
+
+Solution: Use chmod to remove the SGID permission on the containing directory, disabling inheritance of the directory's group ID.
+
+GROUP MEMBERSHIP TROUBLESHOOTING
+Some issues arise because, despite having configured permissions and ownership correctly, the user may not be placed in the correct group. Use the groups {user name} command to discover what groups a user is a member of. A related issue is that, when a user creates files, the default owning group is not what is expected. Make sure the expected group is the user's primary group, rather than a secondary group. In either case, use the usermod command to change group membership when applicable.
+
+It may also be beneficial to list all of the members of a group so you identify which accounts to add or remove as necessary. However, there is not necessarily one simple command that is universal to Linux distributions that can accomplish this. You can search the /etc/group file for the desired group, but this only displays groups in the standard database (i.e., not other authentication methods), and it doesn't show users whose primary group is the group you're searching for. The lid and libuser-lid commands are pre-installed on some distributions and can retrieve all members of a group, including members whose primary group is the group being searched for. The getent command, available on some distributions, enables you to retrieve group members of non-standard authentication methods.
+
+GUIDELINES FOR TROUBLESHOOTING PERMISSIONS ISSUES
+Use the following guidelines when troubleshooting permissions issues.
+
+TROUBLESHOOT PERMISSIONS ISSUES
+When troubleshooting permissions issues:
+
+•
+
+Follow an overall troubleshooting strategy for any kind of troubleshooting task.
+
+•
+
+Follow a step-by-step troubleshooting model that can produce repeatable and demonstrable results.
+
+•
+
+Start by verifying an object's permissions and ownership using the ls -al command.
+
+•
+
+Ensure users have the permissions to work with a file if they are being denied access.
+
+•
+
+Ensure users do not have permissions that enable them to access files beyond what they should have.
+
+•
+
+Ensure objects don't have the immutable flag set if you expect to modify them.
+
+•
+
+Set the SUID permission on an executable if you need to run it with root permissions for it to function properly.
+
+•
+
+Set the sticky bit when you only want the owner and root to be able to delete an object.
+
+•
+
+Ensure objects have the proper owner and owning group set.
+
+•
+
+Set the SGID permission on a directory when you want new files to take on that directory's group ownership.
+
+•
+
+Use the groups {user name} command to verify the groups a user is a member of.
+
+•
+
+Modify group membership when necessary to ensure access or a lack thereof for specific users.
+
+•
+
+Acquire and use tools like lid and getent to view members of a specific group.
