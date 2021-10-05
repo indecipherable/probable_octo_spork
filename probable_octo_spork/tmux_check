@@ -1,0 +1,59 @@
+#!/usr/bin/bash
+
+# working version 1.0
+my_whoami=$(who -m)
+my_name=$(echo $my_whoami | awk '{print $1}')
+my_n=$(echo ${my_name:0:6})
+echo "DEBUG: my_n is: $my_n"
+my_pts=$(echo $my_whoami | awk '{print $2}')
+#echo $my_name
+#echo $my_pts
+# get count of tmux sessions
+my_ses_ct=$(tmux ls | grep -i win -c)
+#echo $my_ses_ct 
+echo "INFO: my_ses_ct is: $my_ses_ct"
+
+#my_att_ses_ct=$(ps -U `whoami` -u `whoami` a | grep attach | grep -v color | grep attach -c)
+ps aux | grep $my_n | grep -v 'color\|grep' | grep -i attach -c
+my_att_ses_ct=$(ps aux | grep $my_n | grep -v 'color\|grep' | grep -i attach -c)
+echo "INFO: my_att_ses_ct is: $my_att_ses_ct"
+#my_att_ses_ct=$(ps aux | grep whitem | grep -ve 'color\|grep' | grep -i attach -c)
+echo "DEBUG: showing attached sessions:"
+ps aux | grep $my_n | grep -ve 'color\|grep' | grep -i attach
+
+
+check_start() {
+echo "INFO: my attached sessions is: $my_att_ses_ct"
+ps aux | grep $my_n | grep attach | grep -v grep
+# check and see if `whoami` has 0 or more sessions
+if [ "$my_att_ses_ct" -eq "0" ]; then
+  echo "INFO: no attached sessions; attaching passed session $1.."
+  sleep 2
+  tmux attach-session -t $1
+  echo "DEBUG: tried to attach-session -t $1"
+else
+  echo "WARN: careful not to nest"
+fi
+}
+
+main() {
+if [ "$my_ses_ct" -gt "1" ]; then
+  echo "INFO: I have multiple sessions.." 
+  tmux ls
+  echo "INPUT: select session:"
+  read my_selection
+  echo "CHECK: session $my_selection"
+  check_start "$my_selection"
+elif [ "$my_ses_ct" -gt "0" ]; then
+  my_ses=$(tmux ls | awk '{print $1}' | sed s/://)
+  echo "INFO: I have one session, $my_ses.."
+  sleep 2
+  check_start "$my_ses"
+else
+  echo "INFO: zero sessions.."
+  sleep 2
+  tmux
+fi
+}
+
+main
